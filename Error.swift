@@ -20,8 +20,10 @@ extension Cusp {
 		case TimedOut
 
 		static var count: Int = {
-			var max: Int = 0
-			while let _ = Error(rawValue: ++max) {}
+			var max: Int = 1
+			while let _ = Error(rawValue: max) {
+				max += 1
+			}
 			return max
 		}()
 	}
