@@ -60,7 +60,7 @@ public class Cusp: NSObject {
     internal let sesQ: dispatch_queue_t  = dispatch_queue_create(CUSP_CENTRAL_Q_SESSION_SERIAL, DISPATCH_QUEUE_SERIAL)
 
 	/// central avator, read only
-	private(set) lazy var centralManager: CentralManager = {
+	public private(set) lazy var centralManager: CentralManager = {
 		return CentralManager(delegate: self, queue: self.mainQ, options: nil)
 	}()
 
