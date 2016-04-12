@@ -32,28 +32,24 @@ extension Cusp: CBCentralManagerDelegate {
 	*/
 	public func centralManager(central: CBCentralManager, didDiscoverPeripheral peripheral: CBPeripheral, advertisementData: [String : AnyObject], RSSI: NSNumber) {
 		dispatch_async(self.mainQ) { () -> Void in
-			// 1. once discovered, wrap CBPeripheral into custom class...
-			for (regex, aClass) in self.customClasses {
-				if peripheral.matches(regex) {
-					if let classRef = aClass.self as? Peripheral.Type {
-						let p = classRef.init(core: peripheral)
-						peripheral.delegate = p
-						self.availables.insert(p)
-						// 2. then forge an advertisement object...
-						let advInfo = Advertisement(peripheral: p, advertisementData: advertisementData, RSSI: RSSI)
-						let uuids = advInfo.advertisingUUIDs
-						// 3. finally, put it into Set "available" of scan req
-						for req in self.scanRequests {
-							if req.advertisingUUIDs == nil {	// a scan req for all peripherals
-								req.available.insert(advInfo)	// put any peripheral into Set "available"
-								break
-							} else if req.advertisingUUIDs?.overlapsWith(uuids) == true {	// a scan req for specific peripheral(s)
-								req.available.insert(advInfo)	// put specific peripheral into Set "available"
-								break
-							}
+			// 0. check if any custom peripheral class registered
+			if !self.customClasses.isEmpty {
+				// custom peripheral class exists
+				// 1. once discovered, wrap CBPeripheral into custom class...
+				for (regex, aClass) in self.customClasses {
+					if peripheral.matches(regex) {
+						if let classRef = aClass.self as? Peripheral.Type {
+							let p = classRef.init(core: peripheral)
+							peripheral.delegate = p
+							self.dealWithFoundPeripherals(p, advertisementData: advertisementData, RSSI: RSSI)
 						}
 					}
 				}
+			} else {
+				// no custom peripheral class
+				let p = Peripheral.init(core: peripheral)
+				peripheral.delegate = p
+				self.dealWithFoundPeripherals(p, advertisementData: advertisementData, RSSI: RSSI)
 			}
 		}
 	}
@@ -237,6 +233,30 @@ private extension Cusp {
 			}
 		}
 		return nil
+	}
+
+	/**
+	private method deal with ble devices and their ad info
+
+	- parameter peripheral:        instance of Peripheral class
+	- parameter advertisementData: advertisement info
+	- parameter RSSI:              RSSI
+	*/
+	private func dealWithFoundPeripherals(peripheral: Peripheral, advertisementData: [String : AnyObject], RSSI: NSNumber) {
+		self.availables.insert(peripheral)
+		// 2. then forge an advertisement object...
+		let advInfo = Advertisement(peripheral: peripheral, advertisementData: advertisementData, RSSI: RSSI)
+		let uuids = advInfo.advertisingUUIDs
+		// 3. finally, put it into Set "available" of scan req
+		for req in self.scanRequests {
+			if req.advertisingUUIDs == nil {	// a scan req for all peripherals
+				req.available.insert(advInfo)	// put any peripheral into Set "available"
+				break
+			} else if req.advertisingUUIDs?.overlapsWith(uuids) == true {	// a scan req for specific peripheral(s)
+				req.available.insert(advInfo)	// put specific peripheral into Set "available"
+				break
+			}
+		}
 	}
 }
 
