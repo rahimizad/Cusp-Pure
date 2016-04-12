@@ -18,7 +18,6 @@ extension Cusp: CBCentralManagerDelegate {
 
 	- parameter central: a CBCentralManager instance
 	*/
-	@available(*, unavailable, message="don't call this method directly")
 	public func centralManagerDidUpdateState(central: CBCentralManager) {
 		NSNotificationCenter.defaultCenter().postNotificationName(CuspStateDidChangeNotification, object: nil)	// post BLE state change notification
 	}
