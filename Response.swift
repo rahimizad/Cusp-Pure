@@ -18,9 +18,9 @@ public class Response: NSObject {
 
 	// MARK: 储值属性
 
-	var value: NSData?
+	public var value: NSData?
 
-	var RSSI: NSNumber?
+	public var RSSI: NSNumber?
 
 	// MARK: 计算属性
 
