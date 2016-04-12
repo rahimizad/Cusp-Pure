@@ -92,7 +92,7 @@ public class Cusp: NSObject {
     internal var sessions              = Set<PeripheralSession>()
 
 	/// registered custom classes
-	internal var customClasses: Dictionary<String, AnyClass> = [:]
+	internal var customClasses		   = [(String, AnyClass)]()
 
 	/// a boolean value indicates whether Cusp is connected with any peripheral
 	public var isConnectedWithAnyPeripheral: Bool {
@@ -136,7 +136,11 @@ public extension Cusp {
 	- parameter p:      regex pattern for name
 	*/
 	public func registerPeripheralClass<T: CustomPeripheral>(aClass: T.Type, forNamePattern p: String) {
-		self.customClasses[p] = aClass
+		self.customClasses.append((p, aClass))
+	}
+
+	public func registerPeripheralClass_oc(aClass: AnyClass, forNamePattern p: String) {
+		self.customClasses.append((p, aClass))
 	}
 
 	/**
