@@ -39,17 +39,25 @@ extension Cusp: CBCentralManagerDelegate {
 				for (regex, aClass) in self.customClasses {
 					if peripheral.matches(regex) {
 						if let classRef = aClass.self as? Peripheral.Type {
-							let p = classRef.init(core: peripheral)
-							peripheral.delegate = p
-							self.dealWithFoundPeripherals(p, advertisementData: advertisementData, RSSI: RSSI)
+							// 1. check if core catched
+							if !self.coreCatched(peripheral) {
+								// 2. uncatched, then catch it!
+								let p = classRef.init(core: peripheral)
+								peripheral.delegate = p
+								self.dealWithFoundPeripherals(p, advertisementData: advertisementData, RSSI: RSSI)
+							}
 						}
 					}
 				}
 			} else {
 				// no custom peripheral class
-				let p = Peripheral.init(core: peripheral)
-				peripheral.delegate = p
-				self.dealWithFoundPeripherals(p, advertisementData: advertisementData, RSSI: RSSI)
+				// 1. check if core catched
+				if !self.coreCatched(peripheral) {
+					// 2. uncatched, then catch it!
+					let p = Peripheral.init(core: peripheral)
+					peripheral.delegate = p
+					self.dealWithFoundPeripherals(p, advertisementData: advertisementData, RSSI: RSSI)
+				}
 			}
 		}
 	}
@@ -257,6 +265,15 @@ private extension Cusp {
 				break
 			}
 		}
+	}
+
+	private func coreCatched(core: CBPeripheral) -> Bool {
+		for p in self.availables {
+			if p.core == core {
+				return true
+			}
+		}
+		return false
 	}
 }
 
